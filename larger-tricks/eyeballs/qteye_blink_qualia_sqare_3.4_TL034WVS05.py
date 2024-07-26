@@ -1,4 +1,4 @@
-# qteye_blink_qualia.py - a stand-alone round LCD "eye" on a ESP32-S3 Qualia board
+# qteye_blink_qualia.py - a stand-alone square LCD "eye" on a ESP32-S3 Qualia board
 # 16 Oct 2023 - @todbot / Tod Kurt
 # Part of circuitpython-tricks/larger-tricks/eyeballs
 # also see: https://todbot.com/blog/2022/05/19/multiple-displays-in-circuitpython-compiling-custom-circuitpython/
@@ -28,58 +28,62 @@ eye_rotation = 00        # 0 or 180, don't do 90 or 270 because too slow (on gc9
 # display.auto_refresh = False
 # dw, dh = 240, 240  # display dimensions
 
-# config: for Qualia ESP32S3 board and 480x480 round display
+# config: for Qualia ESP32S3 board and 480x480 square 3.4 display
 # followed the instructions here:
 #   https://learn.adafruit.com/adafruit-qualia-esp32-s3-for-rgb666-displays/circuitpython-display-setup
 # and cribbed from @dexter/@rsbohn's work:
 #   https://gist.github.com/rsbohn/26a8e69c8fe80112a24e7de09177e8d9
+#
+# https://github.com/todbot/circuitpython-tricks/tree/main/larger-tricks/eyeballs
 import dotclockframebuffer
 from framebufferio import FramebufferDisplay
 
-init_sequence_TL021WVC02 = bytes((
+init_sequence_TL034WVS05 = bytes((
+    b'\xff\x05w\x01\x00\x00\x13'
+    b'\xef\x01\x08'
     b'\xff\x05w\x01\x00\x00\x10'
     b'\xc0\x02;\x00'
-    b'\xc1\x02\x0b\x02'
-    b'\xc2\x02\x00\x02'
+    b'\xc1\x02\x12\n'
+    b'\xc2\x02\x07\x03'
+    b'\xc3\x01\x02'
     b'\xcc\x01\x10'
     b'\xcd\x01\x08'
-    b'\xb0\x10\x02\x13\x1b\r\x10\x05\x08\x07\x07$\x04\x11\x0e,3\x1d'
-    b'\xb1\x10\x05\x13\x1b\r\x11\x05\x08\x07\x07$\x04\x11\x0e,3\x1d'
+    b'\xb0\x10\x0f\x11\x17\x15\x15\t\x0c\x08\x08&\x04Y\x16f-\x1f'
+    b'\xb1\x10\x0f\x11\x17\x15\x15\t\x0c\x08\x08&\x04Y\x16f-\x1f'
     b'\xff\x05w\x01\x00\x00\x11'
-    b'\xb0\x01]'
-    b'\xb1\x01C'
-    b'\xb2\x01\x81'
+    b'\xb0\x01m'
+    b'\xb1\x01:'
+    b'\xb2\x01\x01'
     b'\xb3\x01\x80'
-    b'\xb5\x01C'
+    b'\xb5\x01I'
     b'\xb7\x01\x85'
     b'\xb8\x01 '
     b'\xc1\x01x'
     b'\xc2\x01x'
     b'\xd0\x01\x88'
     b'\xe0\x03\x00\x00\x02'
-    b'\xe1\x0b\x03\xa0\x00\x00\x04\xa0\x00\x00\x00  '
-    b'\xe2\r\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-    b'\xe3\x04\x00\x00\x11\x00'
-    b'\xe4\x02"\x00'
-    b'\xe5\x10\x05\xec\xa0\xa0\x07\xee\xa0\xa0\x00\x00\x00\x00\x00\x00\x00\x00'
-    b'\xe6\x04\x00\x00\x11\x00'
-    b'\xe7\x02"\x00'
-    b'\xe8\x10\x06\xed\xa0\xa0\x08\xef\xa0\xa0\x00\x00\x00\x00\x00\x00\x00\x00'
-    b'\xeb\x07\x00\x00@@\x00\x00\x00'
-    b'\xed\x10\xff\xff\xff\xba\n\xbfE\xff\xffT\xfb\xa0\xab\xff\xff\xff'
+    b'\xe1\x0b\x07\x00\t\x00\x06\x00\x08\x00\x0033'
+    b'\xe2\r\x11\x1133\xf6\x00\xf6\x00\xf6\x00\xf6\x00\x00'
+    b'\xe3\x04\x00\x00\x11\x11'
+    b'\xe4\x02DD'
+    b'\xe5\x10\x0f\xf3=\xff\x11\xf5=\xff\x0b\xef=\xff\r\xf1=\xff'
+    b'\xe6\x04\x00\x00\x11\x11'
+    b'\xe7\x02DD'
+    b'\xe8\x10\x0e\xf2=\xff\x10\xf4=\xff\n\xee=\xff\x0c\xf0=\xff'
+    b'\xe9\x026\x00'
+    b'\xeb\x07\x00\x01\xe4\xe4D\xaa\x10'
+    b'\xec\x02<\x00'
+    b'\xed\x10\xffEg\xfa\x01+\xcf\xff\xff\xfc\xb2\x10\xafvT\xff'
     b'\xef\x06\x10\r\x04\x08?\x1f'
-    b'\xff\x05w\x01\x00\x00\x13'
-    b'\xef\x01\x08'
     b'\xff\x05w\x01\x00\x00\x00'
-    b'6\x01\x00'
-    b':\x01`'
-    b'\x11\x80d'
+    b'5\x01\x00'
+    b':\x01f'
+    b'\x11\x80x'
     b')\x802'
 ))
 
-# I'm just guessing at all of this
 tft_timings = {
-    "frequency": 6_500_000,
+    "frequency": 16000000,
     "width": 480,
     "height": 480,
     "hsync_pulse_width": 20,
@@ -99,7 +103,7 @@ displayio.release_displays()
 board.I2C().deinit()
 i2c = busio.I2C(board.SCL, board.SDA, frequency=400_000)
 dotclockframebuffer.ioexpander_send_init_sequence(
-    i2c, init_sequence_TL021WVC02, **(dict(board.TFT_IO_EXPANDER)))
+    i2c, init_sequence_TL034WVS05, **(dict(board.TFT_IO_EXPANDER)))
 i2c.deinit()
 
 fb = dotclockframebuffer.DotClockFramebuffer(
@@ -193,3 +197,4 @@ the_eyes = [
 while True:
     for eye in the_eyes:
         eye.update()
+
